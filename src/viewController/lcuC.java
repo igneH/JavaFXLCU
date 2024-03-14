@@ -19,10 +19,6 @@ public class lcuC {
 
     private Calls model;
 
-    public void btGetParticipantsOnAction(ActionEvent actionEvent) {
-        getParticipatns();
-    }
-
     public static void show(Stage stage) throws IOException {
         try {
             FXMLLoader loader = new FXMLLoader(lcuC.class.getResource("lcuV.fxml"));
@@ -39,7 +35,11 @@ public class lcuC {
         }
     }
 
-    private void getParticipatns() {
+    public void btGetParticipantsOnAction(ActionEvent actionEvent) {
+        getParticipatns();
+    }
 
+    private void getParticipatns() {
+        System.out.println("Test");
     }
 }
