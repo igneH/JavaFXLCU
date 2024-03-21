@@ -12,19 +12,14 @@ public class LockfileContents {
     }
 
     private String[] readRiotlockfile(){
-        try(BufferedReader br = new BufferedReader(new FileReader(riotlockfilePath))) {
-            StringBuilder sb = new StringBuilder();
-            String line = br.readLine();
-
-            sb.append(line);
-            return line.split(":");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return new String[0];
+        return getStrings(riotlockfilePath);
     }
 
     private String[] readLeaguelockfile(){
+        return getStrings(leagueLockfilePath);
+    }
+
+    private String[] getStrings(String leagueLockfilePath) {
         try(BufferedReader br = new BufferedReader(new FileReader(leagueLockfilePath))) {
             StringBuilder sb = new StringBuilder();
             String line = br.readLine();
