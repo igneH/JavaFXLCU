@@ -1,7 +1,6 @@
 package connectToLCU;
 
 import java.io.*;
-import java.util.Arrays;
 
 public class LockfileContents {
     String leagueLockfilePath = "C:\\Riot Games\\League of Legends\\lockfile";

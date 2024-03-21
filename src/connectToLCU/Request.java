@@ -1,15 +1,9 @@
 package connectToLCU;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import java.awt.*;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -39,7 +33,7 @@ public class Request {
         try {
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null,trustAllCerts,new SecureRandom());
-            String credentials = "riot:" + lockfileContents.getRiotPw();
+            String credentials = STR."riot:\{lockfileContents.getRiotPw()}";
             String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
 
             HttpRequest request = HttpRequest.newBuilder()

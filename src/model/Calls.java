@@ -1,7 +1,5 @@
 package model;
 
-
-
 public class Calls {
 
     private void getParticipants(){
