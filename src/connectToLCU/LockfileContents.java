@@ -5,12 +5,26 @@ import java.util.Arrays;
 
 public class LockfileContents {
     String leagueLockfilePath = "C:\\Riot Games\\League of Legends\\lockfile";
+    String riotlockfilePath = System.getenv("riotlockfileLocation");
 
     public LockfileContents(){
 
     }
 
-    private String[] readlockfile() throws IOException {
+    private String[] readRiotlockfile(){
+        try(BufferedReader br = new BufferedReader(new FileReader(riotlockfilePath))) {
+            StringBuilder sb = new StringBuilder();
+            String line = br.readLine();
+
+            sb.append(line);
+            return line.split(":");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new String[0];
+    }
+
+    private String[] readLeaguelockfile(){
         try(BufferedReader br = new BufferedReader(new FileReader(leagueLockfilePath))) {
             StringBuilder sb = new StringBuilder();
             String line = br.readLine();
@@ -23,15 +37,27 @@ public class LockfileContents {
         return new String[0];
     }
 
-    public int getPort() throws IOException {
-        return Integer.parseInt(readlockfile()[2]);
+    public int getLeaguePort() throws IOException {
+        return Integer.parseInt(readLeaguelockfile()[2]);
     }
 
-    public String getPw() throws IOException {
-        return readlockfile()[3];
+    public String getLeaguePw() throws IOException {
+        return readLeaguelockfile()[3];
     }
 
-    public String getProtocol() throws IOException {
-        return readlockfile()[4];
+    public String getLeagueProtocol() throws IOException {
+        return readLeaguelockfile()[4];
+    }
+
+    public int getRiotPort() throws IOException {
+        return Integer.parseInt(readRiotlockfile()[2]);
+    }
+
+    public String getRiotPw() throws IOException {
+        return readRiotlockfile()[3];
+    }
+
+    public String getRiotProtocol() throws IOException {
+        return readRiotlockfile()[4];
     }
 }

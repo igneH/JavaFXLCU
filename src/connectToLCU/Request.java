@@ -1,50 +1,93 @@
 package connectToLCU;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
-import jdk.internal.util.xml.impl.Input;
-import sun.net.www.http.HttpClient;
-
-import java.io.BufferedReader;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.awt.*;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Base64;
 
+
 public class Request {
-    private final String apiCall;
-    private final String method;
 
     static LockfileContents lockfileContents = new LockfileContents();
 
-    public Request(String method, String apiCall) {
-        this.apiCall = apiCall;
-        this.method = method;
+    public Request() {
     }
 
     private static String connectionString() throws IOException {
-        return lockfileContents.getProtocol() + "://127.0.0.1:" + lockfileContents.getPort();
+        return STR."\{lockfileContents.getRiotProtocol()}://127.0.0.1:\{lockfileContents.getRiotPort()}";
     }
 
-    public void createRequest() throws IOException {
-        String encoding = Base64.getEncoder().encodeToString(("riot:"+lockfileContents.getPw()).getBytes());
-        URL url = new URL(connectionString()+ apiCall);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestProperty("User-Agent", "LeagueOfLegendsClient");
-        conn.setRequestProperty("Authorization", "Basic " + encoding);
-        conn.setRequestMethod(method);
-        conn.setRequestProperty("Content-Type", "application/json");
-        conn.setUseCaches(false);
-        conn.setDoInput(true);
-        conn.setDoOutput(true);
+    public void createGetRequest(String apiCall){
+        try {
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null,trustAllCerts,new SecureRandom());
+            String credentials = "riot:" + lockfileContents.getRiotPw();
+            String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
 
-        System.out.println(conn);
-        InputStream content = conn.getInputStream();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .GET()
+                    .header("User-Agent", "LeagueOfLegendsClient")
+                    .header("Accept", "application/json")
+                    .header("Authorization", STR."Basic \{encodedCredentials}")
+                    .uri(new URI(connectionString()+apiCall))
+                    .build();
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(content));
-        String line;
-        while ((line = in.readLine()) != null){
-            System.out.println(line);
+            HttpClient httpClient = HttpClient.newBuilder()
+                    .sslContext(sslContext)
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println("participants: "+response.statusCode());
+            System.out.println(response.body());
+
+            Gson gson = new Gson();
+
+            JsonObject participantsJson = gson.fromJson(response.body(), JsonObject.class);
+            JsonArray participants = participantsJson.getAsJsonArray("participants");
+
+            StringBuilder multisearchString = new StringBuilder("https://www.op.gg/multisearch/EUW?summoners=");
+
+            for (JsonElement element : participants){
+                JsonObject participant = element.getAsJsonObject();
+                if (participant.get("activePlatform") != null && !participant.get("activePlatform").isJsonNull()) {
+                    String gameName = participant.get("game_name").getAsString();
+                    String gameTag = participant.get("game_tag").getAsString();
+                    System.out.println(STR."\{gameName}#\{gameTag}");
+                    multisearchString.append(STR."\{gameName}%23\{gameTag}%2C");
+                }
+            }
+
+            Desktop desktop = Desktop.getDesktop();
+            desktop.browse(new URI(multisearchString.toString()));
+
+        }catch (KeyManagementException| NoSuchAlgorithmException | IOException | InterruptedException | URISyntaxException e){
+            e.printStackTrace();
         }
     }
+    private static TrustManager[] trustAllCerts = new TrustManager[]{
+            new X509TrustManager() {
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+                public void checkClientTrusted(
+                        java.security.cert.X509Certificate[] certs, String authType) {
+                }
+                public void checkServerTrusted(
+                        java.security.cert.X509Certificate[] certs, String authType) {
+                }
+            }
+    };
 }

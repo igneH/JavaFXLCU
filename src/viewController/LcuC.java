@@ -1,8 +1,9 @@
 package viewController;
 
+import connectToLCU.Methods;
+import connectToLCU.Request;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -13,15 +14,15 @@ import model.Calls;
 
 import java.io.IOException;
 
-public class lcuC {
+public class LcuC {
     public Button btGetParticipants;
     public CheckBox cbOpenOPGG;
 
-    private Calls model;
+    private Request request;
 
     public static void show(Stage stage) throws IOException {
         try {
-            FXMLLoader loader = new FXMLLoader(lcuC.class.getResource("lcuV.fxml"));
+            FXMLLoader loader = new FXMLLoader(LcuC.class.getResource("lcuV.fxml"));
             Parent root = loader.load();
 
             Scene scene = new Scene(root);
@@ -40,6 +41,6 @@ public class lcuC {
     }
 
     private void getParticipatns() {
-        System.out.println("Test");
+        new Request().createGetRequest("/chat/v5/participants/");
     }
 }
