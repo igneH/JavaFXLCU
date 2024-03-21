@@ -9,6 +9,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.awt.*;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -27,11 +28,14 @@ public class Request {
     public Request() {
     }
 
-    private static String connectionString() throws IOException {
-        return STR."\{lockfileContents.getRiotProtocol()}://127.0.0.1:\{lockfileContents.getRiotPort()}";
+    private static String connectionString(Methods service) throws IOException {
+        if(service == Methods.RIOT){
+            return STR."\{lockfileContents.getRiotProtocol()}://127.0.0.1:\{lockfileContents.getRiotPort()}";
+        }
+        return STR."\{lockfileContents.getRiotProtocol()}://127.0.0.1:\{lockfileContents.getLeaguePort()}";
     }
 
-    public void createGetRequest(String apiCall){
+    public String createGetRequest(Methods service, String apiCall){
         try {
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null,trustAllCerts,new SecureRandom());
@@ -43,7 +47,7 @@ public class Request {
                     .header("User-Agent", "LeagueOfLegendsClient")
                     .header("Accept", "application/json")
                     .header("Authorization", STR."Basic \{encodedCredentials}")
-                    .uri(new URI(connectionString()+apiCall))
+                    .uri(new URI(connectionString(service)+apiCall))
                     .build();
 
             HttpClient httpClient = HttpClient.newBuilder()
@@ -53,29 +57,12 @@ public class Request {
             System.out.println("participants: "+response.statusCode());
             System.out.println(response.body());
 
-            Gson gson = new Gson();
-
-            JsonObject participantsJson = gson.fromJson(response.body(), JsonObject.class);
-            JsonArray participants = participantsJson.getAsJsonArray("participants");
-
-            StringBuilder multisearchString = new StringBuilder("https://www.op.gg/multisearch/EUW?summoners=");
-
-            for (JsonElement element : participants){
-                JsonObject participant = element.getAsJsonObject();
-                if (participant.get("activePlatform") != null && !participant.get("activePlatform").isJsonNull()) {
-                    String gameName = participant.get("game_name").getAsString();
-                    String gameTag = participant.get("game_tag").getAsString();
-                    System.out.println(STR."\{gameName}#\{gameTag}");
-                    multisearchString.append(STR."\{gameName}%23\{gameTag}%2C");
-                }
-            }
-
-            Desktop desktop = Desktop.getDesktop();
-            desktop.browse(new URI(multisearchString.toString()));
-
-        }catch (KeyManagementException| NoSuchAlgorithmException | IOException | InterruptedException | URISyntaxException e){
+            return response.body();
+        }
+        catch (KeyManagementException| NoSuchAlgorithmException | IOException | InterruptedException | URISyntaxException e){
             e.printStackTrace();
         }
+        return "";
     }
     private static TrustManager[] trustAllCerts = new TrustManager[]{
             new X509TrustManager() {

@@ -1,5 +1,9 @@
 package viewController;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import connectToLCU.Methods;
 import connectToLCU.Request;
 import javafx.application.Platform;
@@ -12,7 +16,10 @@ import javafx.scene.control.CheckBox;
 import javafx.stage.Stage;
 import model.Calls;
 
+import java.awt.*;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class LcuC {
     public Button btGetParticipants;
@@ -40,7 +47,31 @@ public class LcuC {
         getParticipatns();
     }
 
-    private void getParticipatns() {
-        new Request().createGetRequest("/chat/v5/participants/");
+    private void getParticipatns(){
+        try {
+            String link = new Request().createGetRequest(Methods.RIOT,"/chat/v5/participants/");
+            Gson gson = new Gson();
+
+            JsonObject participantsJson = gson.fromJson(link, JsonObject.class);
+            JsonArray participants = participantsJson.getAsJsonArray("participants");
+
+            StringBuilder multisearchString = new StringBuilder("https://www.op.gg/multisearch/EUW?summoners=");
+
+            for (JsonElement element : participants){
+                JsonObject participant = element.getAsJsonObject();
+                if (participant.get("activePlatform") != null && !participant.get("activePlatform").isJsonNull()) {
+                    String gameName = participant.get("game_name").getAsString();
+                    String gameTag = participant.get("game_tag").getAsString();
+                    System.out.println(STR."\{gameName}#\{gameTag}");
+                    multisearchString.append(STR."\{gameName}%23\{gameTag}%2C");
+                }
+            }
+
+            Desktop desktop = Desktop.getDesktop();
+            desktop.browse(new URI(multisearchString.toString()));
+        }catch (URISyntaxException | IOException e){
+            e.printStackTrace();
+        }
+
     }
 }
