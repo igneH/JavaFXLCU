@@ -1,40 +1,40 @@
 package viewController;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import connectToLCU.Methods;
-import connectToLCU.Request;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import model.Calls;
 
-import java.awt.*;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 public class LcuC {
+    private final Calls calls = new Calls();
+
     public Button btGetParticipants;
     public CheckBox cbOpenOPGG;
+    public TextField tfUsername;
+    public CheckBox cbMultipleClients;
+    public PasswordField pfPassword;
+    public Button btLogin;
 
-    private Request request;
-
-    public static void show(Stage stage) throws IOException {
+    public static void show(Stage stage) {
         try {
-            FXMLLoader loader = new FXMLLoader(LcuC.class.getResource("lcuV.fxml"));
+            FXMLLoader loader = new FXMLLoader(LcuC.class.getResource("LcuV.fxml"));
             Parent root = loader.load();
 
             Scene scene = new Scene(root);
             stage.setTitle("LCU Shit");
             stage.setScene(scene);
             stage.show();
+
         }
         catch (IOException e){
             e.printStackTrace();
@@ -43,34 +43,35 @@ public class LcuC {
     }
 
     public void btGetParticipantsOnAction(ActionEvent actionEvent) {
-        getParticipatns();
+        showLobby();
     }
 
-    private void getParticipatns(){
-        try {
-            String link = new Request().createGetRequest(Methods.RIOT,"/chat/v5/participants/");
-            Gson gson = new Gson();
+    public void btLoginOnAction(ActionEvent actionEvent) {
+        login();
+    }
 
-            JsonObject participantsJson = gson.fromJson(link, JsonObject.class);
-            JsonArray participants = participantsJson.getAsJsonArray("participants");
 
-            StringBuilder multisearchString = new StringBuilder("https://www.op.gg/multisearch/EUW?summoners=");
+    private void showLobby(){
+        calls.getParticipants();
+    }
 
-            for (JsonElement element : participants){
-                JsonObject participant = element.getAsJsonObject();
-                if (participant.get("activePlatform") != null && !participant.get("activePlatform").isJsonNull()) {
-                    String gameName = participant.get("game_name").getAsString();
-                    String gameTag = participant.get("game_tag").getAsString();
-                    System.out.println(STR."\{gameName}#\{gameTag}");
-                    multisearchString.append(STR."\{gameName}%23\{gameTag}%2C");
-                }
-            }
+    private void login(){
+        calls.login(tfUsername.getText(), pfPassword.getText(), cbMultipleClients.isSelected());
+    }
 
-            Desktop desktop = Desktop.getDesktop();
-            desktop.browse(new URI(multisearchString.toString()));
-        }catch (URISyntaxException | IOException e){
-            e.printStackTrace();
-        }
-
+    @FXML
+    public void initialize(){
+        tfUsername.textProperty().addListener((button, username, password) -> {
+            updateButtonState(btLogin, tfUsername.getText(), pfPassword.getText());
+        });
+        pfPassword.textProperty().addListener((button, username, password) -> {
+            updateButtonState(btLogin, tfUsername.getText(), pfPassword.getText());
+        });
+        btLogin.setDisable(true);
+        cbMultipleClients.setSelected(false);
+        cbOpenOPGG.setSelected(true);
+    }
+    private void updateButtonState(Button button, String username, String password){
+        button.setDisable(username.isEmpty() || password.isEmpty());
     }
 }

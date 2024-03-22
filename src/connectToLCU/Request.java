@@ -14,26 +14,31 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-
 public class Request {
 
-    static LockfileContents lockfileContents = new LockfileContents();
+    static LockfileContents lockfileContents;
 
     public Request() {
     }
 
     private static String connectionString(Methods service) throws IOException {
+        lockfileContents = new LockfileContents();
         if(service == Methods.RIOT){
             return STR."\{lockfileContents.getRiotProtocol()}://127.0.0.1:\{lockfileContents.getRiotPort()}";
         }
         return STR."\{lockfileContents.getRiotProtocol()}://127.0.0.1:\{lockfileContents.getLeaguePort()}";
     }
 
-    public String createGetRequest(Methods service, String apiCall){
+    public String getRequest(Methods service, String apiCall){
+        lockfileContents = new LockfileContents();
         try {
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null,trustAllCerts,new SecureRandom());
-            String credentials = STR."riot:\{lockfileContents.getRiotPw()}";
+            SSLContext sslContext = setSSLContext();
+            String credentials;
+            if (service == Methods.RIOT) {
+                credentials = STR."riot:\{lockfileContents.getRiotPw()}";
+            }else {
+                credentials = STR."riot:\{lockfileContents.getLeaguePw()}";
+            }
             String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
 
             HttpRequest request = HttpRequest.newBuilder()
@@ -48,17 +53,53 @@ public class Request {
                     .sslContext(sslContext)
                     .build();
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println("participants: "+response.statusCode());
-            System.out.println(response.body());
+            System.out.println(STR."GetRequest: \{response.statusCode()}\n\{response.body()}");
 
             return response.body();
         }
-        catch (KeyManagementException| NoSuchAlgorithmException | IOException | InterruptedException | URISyntaxException e){
+        catch (IOException | InterruptedException | URISyntaxException e){
             e.printStackTrace();
         }
-        return "";
+        return "nono worki";
     }
-    private static TrustManager[] trustAllCerts = new TrustManager[]{
+
+    public String putRequest(Methods service, String apiCall, String body){
+        lockfileContents = new LockfileContents();
+        try{
+            SSLContext sslContext = setSSLContext();
+            String credentials;
+            if (service == Methods.RIOT) {
+                credentials = STR."riot:\{lockfileContents.getRiotPw()}";
+            }else {
+                credentials = STR."riot:\{lockfileContents.getLeaguePw()}";
+            }
+            String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .PUT(HttpRequest.BodyPublishers.ofString(body))
+                    .header("User-Agent", "LeagueOfLegendsClient")
+                    .header("Accept", "application/json")
+                    .header("Authorization", STR."Basic \{encodedCredentials}")
+                    .uri(new URI(connectionString(service)+apiCall))
+                    .build();
+
+            System.out.println(request.uri());
+            System.out.println(request.bodyPublisher().toString());
+
+            HttpClient httpClient = HttpClient.newBuilder()
+                    .sslContext(sslContext)
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println(STR."PutRequest: \{response.statusCode()}\n\{response.body()}");
+
+            return response.body();
+        } catch (InterruptedException | IOException | URISyntaxException e) {
+            e.printStackTrace();
+        }
+        return "ned gfunkt";
+    }
+    private static final TrustManager[] trustAllCerts = new TrustManager[]{
             new X509TrustManager() {
                 public java.security.cert.X509Certificate[] getAcceptedIssuers() {
                     return null;
@@ -71,4 +112,14 @@ public class Request {
                 }
             }
     };
+    private SSLContext setSSLContext(){
+        try {
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null,trustAllCerts,new SecureRandom());
+            return sslContext;
+        }catch(NoSuchAlgorithmException | KeyManagementException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

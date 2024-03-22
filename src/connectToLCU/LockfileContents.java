@@ -24,6 +24,7 @@ public class LockfileContents {
             String line = br.readLine();
 
             sb.append(line);
+            br.close();
             return line.split(":");
         } catch (IOException e) {
             e.printStackTrace();

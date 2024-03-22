@@ -8,14 +8,12 @@ import viewController.LcuC;
 public class TheMain extends Application {
 
     @Override
-    public void init() throws Exception {
-
+    public void init(){
 
     }
 
-
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
         LcuC.show(primaryStage);
     }
 }
