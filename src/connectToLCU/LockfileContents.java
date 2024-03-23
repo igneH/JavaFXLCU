@@ -1,6 +1,8 @@
 package connectToLCU;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class LockfileContents {
     String leagueLockfilePath = "C:\\Riot Games\\League of Legends\\lockfile";
@@ -19,6 +21,18 @@ public class LockfileContents {
     }
 
     private String[] getStrings(String leagueLockfilePath) {
+        boolean fileExists = false;
+        while (!fileExists){
+            System.out.println("Looking for lockfile");
+            if (Files.exists(Path.of(leagueLockfilePath))){
+                fileExists = true;
+            }
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         try(BufferedReader br = new BufferedReader(new FileReader(leagueLockfilePath))) {
             StringBuilder sb = new StringBuilder();
             String line = br.readLine();

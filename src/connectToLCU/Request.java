@@ -60,7 +60,7 @@ public class Request {
         catch (IOException | InterruptedException | URISyntaxException e){
             e.printStackTrace();
         }
-        return "nono worki";
+        return "failed";
     }
 
     public String putRequest(Methods service, String apiCall, String body){
@@ -99,6 +99,32 @@ public class Request {
         }
         return "ned gfunkt";
     }
+
+    public String getRequestSub(Methods service, String apiCall, Events event) {
+        SSLContext sslContext = setSSLContext();
+        String credentials;
+        try {
+            if (service == Methods.RIOT) {
+                credentials = STR."riot:\{lockfileContents.getRiotPw()}";
+            } else {
+                credentials = STR."riot:\{lockfileContents.getLeaguePw()}";
+            }
+            String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .GET()
+                    .header("User-Agent", "LeagueOfLegendsClient")
+                    .header("Accept", "application/json")
+                    .header("Authorization", STR."Basic \{encodedCredentials}")
+                    .uri(new URI(connectionString(service)+apiCall))
+                    .build();
+
+        } catch (IOException | URISyntaxException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     private static final TrustManager[] trustAllCerts = new TrustManager[]{
             new X509TrustManager() {
                 public java.security.cert.X509Certificate[] getAcceptedIssuers() {
@@ -112,6 +138,7 @@ public class Request {
                 }
             }
     };
+
     private SSLContext setSSLContext(){
         try {
             SSLContext sslContext = SSLContext.getInstance("TLS");

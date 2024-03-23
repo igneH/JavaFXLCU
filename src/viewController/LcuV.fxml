@@ -29,6 +29,13 @@
     </MenuBar>
     <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
         <VBox prefHeight="400.0" prefWidth="300.0">
+            <VBox prefHeight="22.0" prefWidth="300.0">
+                <CheckBox fx:id="cbAutoAccept" mnemonicParsing="false" prefHeight="17.0" text="Autoaccept Queue">
+                    <VBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                    </VBox.margin>
+                </CheckBox>
+            </VBox>
             <Label alignment="CENTER" prefWidth="300.0" text="Lobby Revealer">
                 <VBox.margin>
                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -81,10 +88,9 @@
                     </GridPane.margin>
                 </CheckBox>
                 <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.rowIndex="2">
-                    <Button fx:id="btLogin" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#btLoginOnAction"
-                            text="Login">
+                    <Button fx:id="btLogin" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#btLoginOnAction" text="Login">
                         <HBox.margin>
-                            <Insets/>
+                            <Insets />
                         </HBox.margin>
                     </Button>
                 </HBox>

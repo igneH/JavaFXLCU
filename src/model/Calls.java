@@ -12,7 +12,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.TimeUnit;
+import java.util.Objects;
 
 public class Calls {
     Transcript transcript = new Transcript();
@@ -50,20 +50,37 @@ public class Calls {
         transcript.setUsername(username);
         transcript.setPersistLogin(persistLogin);
 
-        startRiotClient();
+        //startRiotClient();
 
         Gson gson = new Gson();
         String loginBody = gson.toJson(transcript);
-        new Request().putRequest(Methods.RIOT, "/rso-auth/v1/session/credentials", loginBody);
+        boolean riotClientComReady = false;
+        while (!riotClientComReady){
+            String test = new Request().putRequest(Methods.RIOT, "/rso-auth/v1/session/credentials", loginBody);
+            if (!Objects.equals(test, "{\"errorCode\":\"RESOURCE_NOT_FOUND\",\"httpStatus\":404,\"message\":\"Invalid URI format\"}")){
+                riotClientComReady = true;
+            }
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("end");
+    }
+
+    public void autoacceptQueue(boolean selected){
+        if (selected){
+
+        }
     }
 
     private void startRiotClient() {
+        ProcessBuilder builder = new ProcessBuilder(
+                "C:\\Riot Games\\Riot Client\\RiotClientServices.exe"); //,"--launch-product=league_of_legends", "--launch-patchline=live", "--allow-multiple-clients"
         try {
-            ProcessBuilder process = new ProcessBuilder("C:\\Riot Games\\Riot Client\\RiotClientServices.exe", "--launch-product=league_of_legends", "--launch-patchline=live", "--allow-multiple-clients");
-            Process process1 = process.start();
-            process1.waitFor();
-           Thread.sleep(1000);
-        }catch (IOException | InterruptedException e) {
+            builder.start();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

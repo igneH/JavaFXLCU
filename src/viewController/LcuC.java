@@ -24,6 +24,7 @@ public class LcuC {
     public CheckBox cbMultipleClients;
     public PasswordField pfPassword;
     public Button btLogin;
+    public CheckBox cbAutoAccept;
 
     public static void show(Stage stage) {
         try {
@@ -61,11 +62,14 @@ public class LcuC {
 
     @FXML
     public void initialize(){
-        tfUsername.textProperty().addListener((button, username, password) -> {
+        tfUsername.textProperty().addListener((observable, oldValue, newValue) -> {
             updateButtonState(btLogin, tfUsername.getText(), pfPassword.getText());
         });
-        pfPassword.textProperty().addListener((button, username, password) -> {
+        pfPassword.textProperty().addListener((observable, oldValue, newValue) -> {
             updateButtonState(btLogin, tfUsername.getText(), pfPassword.getText());
+        });
+        cbAutoAccept.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            calls.autoacceptQueue(cbAutoAccept.isSelected());
         });
         btLogin.setDisable(true);
         cbMultipleClients.setSelected(false);
